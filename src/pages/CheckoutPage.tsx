@@ -297,18 +297,16 @@ const CheckoutPage = () => {
                 </div>
                 )}
               </div>
-                  <div className="flex justify-center gap-5 mb-5 flex-wrap">
-                    {[['fa-lock', '256-bit SSL'], ['fa-shield-halved', 'PCI DSS'], ['fa-check-circle', 'RBI Authorized'], ['fa-shield', '3D Secure']].map(([icon, label]) => (
-                      <span key={label} className="text-[11px] text-th-text3 flex items-center gap-1.5"><i className={`fa-solid ${icon} text-[10px]`} /> {label}</span>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap gap-2 justify-center mb-6">
-                    {['VISA', 'MASTERCARD', 'AMEX', 'RUPAY', 'UPI', 'BHIM', 'GPAY', 'PHONEPE', 'PAYTM', 'EMI', 'COD'].map(b => (
-                      <span key={b} className="font-mono text-[10px] px-2.5 py-1 rounded border border-[rgba(255,255,255,0.12)] text-th-text3">{b}</span>
-                    ))}
-                  </div>
-                </div>
-                )}
+
+              <div className="flex justify-center gap-5 mb-5 flex-wrap">
+                {[['fa-lock', '256-bit SSL'], ['fa-shield-halved', 'PCI DSS'], ['fa-check-circle', 'RBI Authorized'], ['fa-shield', '3D Secure']].map(([icon, label]) => (
+                  <span key={label} className="text-[11px] text-th-text3 flex items-center gap-1.5"><i className={`fa-solid ${icon} text-[10px]`} /> {label}</span>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center mb-6">
+                {['VISA', 'MASTERCARD', 'AMEX', 'RUPAY', 'UPI', 'BHIM', 'GPAY', 'PHONEPE', 'PAYTM', 'EMI', 'COD'].map(b => (
+                  <span key={b} className="font-mono text-[10px] px-2.5 py-1 rounded border border-[rgba(255,255,255,0.12)] text-th-text3">{b}</span>
+                ))}
               </div>
             </div>
           )}
