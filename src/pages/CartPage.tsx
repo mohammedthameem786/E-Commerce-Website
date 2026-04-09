@@ -13,7 +13,10 @@ const CartPage = () => {
         <span className="text-[80px] block mb-4">🛒</span>
         <h1 className="font-display text-3xl mb-2">YOUR CART IS EMPTY</h1>
         <p className="text-sm text-th-text2 mb-8">Looks like you haven't added anything yet</p>
-        <button onClick={() => showPage('products')} className="px-8 py-3.5 rounded bg-th-accent text-[13px] font-bold uppercase tracking-[1.5px] hover:bg-[#33eeff] transition-all" style={{ color: '#080808' }}>CONTINUE SHOPPING</button>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <button onClick={() => showPage('products')} className="px-8 py-3.5 rounded bg-th-accent text-[13px] font-bold uppercase tracking-[1.5px] hover:bg-[#33eeff] transition-all" style={{ color: '#080808' }}>CONTINUE SHOPPING</button>
+          <button onClick={() => showPage('order-history')} className="px-8 py-3.5 rounded border border-th-accent text-th-accent text-[13px] font-bold uppercase tracking-[1.5px] hover:bg-th-accent hover:text-th-bg transition-all">VIEW ORDER HISTORY</button>
+        </div>
       </div>
     );
   }
@@ -46,7 +49,10 @@ const CartPage = () => {
               <button onClick={() => removeFromCart(item.id)} className="text-th-text3 hover:text-th-red transition-colors p-2"><i className="fa-solid fa-trash text-sm" /></button>
             </div>
           ))}
-          <button onClick={() => showPage('products')} className="text-th-accent text-[13px] mt-4 hover:underline">← Continue Shopping</button>
+          <div className="flex gap-3 mt-4">
+            <button onClick={() => showPage('products')} className="text-th-accent text-[13px] hover:underline">← Continue Shopping</button>
+            <button onClick={() => showPage('order-history')} className="text-th-accent text-[13px] hover:underline">View Order History →</button>
+          </div>
         </div>
 
         {/* Summary */}

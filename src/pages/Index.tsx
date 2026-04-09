@@ -1,6 +1,5 @@
 import { lazy, Suspense } from 'react';
 import { StoreProvider, useStore } from '@/context/StoreContext';
-import CustomCursor from '@/components/CustomCursor';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Toasts from '@/components/Toasts';
@@ -8,6 +7,7 @@ import HomePage from '@/pages/HomePage';
 import ProductsPage from '@/pages/ProductsPage';
 import CartPage from '@/pages/CartPage';
 import WishlistPage from '@/pages/WishlistPage';
+import OrderHistoryPage from '@/pages/OrderHistoryPage';
 
 // Lazy load heavy pages for better performance
 const LazyCheckout = lazy(() => import('@/pages/CheckoutPage'));
@@ -25,11 +25,11 @@ const AppContent = () => {
     cart: <CartPage />,
     checkout: <Suspense fallback={<PageLoader />}><LazyCheckout /></Suspense>,
     wishlist: <WishlistPage />,
+    'order-history': <OrderHistoryPage />,
   };
 
   return (
     <>
-      <CustomCursor />
       <Navbar />
       <main>{pages[currentPage] || <HomePage />}</main>
       <Footer />

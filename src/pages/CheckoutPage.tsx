@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '@/context/StoreContext';
 import { formatPrice } from '@/data/products';
+import { Order, OrderAddress } from '@/context/StoreContext';
 
 const CheckoutPage = () => {
-  const { cart, cartTotal, showPage, applyPromo, promoApplied } = useStore();
+  const { cart, cartTotal, showPage, applyPromo, promoApplied, addOrderToHistory, clearCart, getLastAddress } = useStore();
   const [step, setStep] = useState(1);
   const [paymentTab, setPaymentTab] = useState('card');
   const [processing, setProcessing] = useState(false);
@@ -14,6 +15,35 @@ const CheckoutPage = () => {
   const [cardName, setCardName] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const totals = cartTotal();
+
+  // Address form states
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [alternatePhone, setAlternatePhone] = useState('');
+  const [address1, setAddress1] = useState('');
+  const [address2, setAddress2] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [pinCode, setPinCode] = useState('');
+
+  // Pre-fill address from last order
+  useEffect(() => {
+    const lastAddress = getLastAddress();
+    if (lastAddress) {
+      setFirstName(lastAddress.firstName);
+      setLastName(lastAddress.lastName);
+      setEmail(lastAddress.email);
+      setPhone(lastAddress.phone);
+      setAlternatePhone(lastAddress.alternatePhone || '');
+      setAddress1(lastAddress.address1);
+      setAddress2(lastAddress.address2 || '');
+      setCity(lastAddress.city);
+      setState(lastAddress.state);
+      setPinCode(lastAddress.pinCode);
+    }
+  }, [getLastAddress]);
 
   const detectCard = (num: string) => {
     if (num.startsWith('4')) return 'VISA';
@@ -29,10 +59,39 @@ const CheckoutPage = () => {
   };
 
   const processPayment = () => {
+    // Validate required fields
+    if (!firstName || !lastName || !email || !phone || !address1 || !city || !state || !pinCode) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
     setProcessing(true);
+    const newOrderNumber = 'TH-' + Math.floor(100000 + Math.random() * 900000);
+    
     setTimeout(() => {
+      // Create order with address
+      const orderAddress: OrderAddress = {
+        firstName, lastName, email, phone, alternatePhone,
+        address1, address2, city, state, pinCode,
+      };
+
+      const newOrder: Order = {
+        id: Date.now().toString(),
+        orderNumber: newOrderNumber,
+        items: cart,
+        address: orderAddress,
+        totals,
+        paymentMethod: paymentTab,
+        deliveryType,
+        status: 'confirmed',
+        createdAt: new Date().toISOString(),
+        deliveryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+      };
+
+      addOrderToHistory(newOrder);
+      clearCart();
       setProcessing(false);
-      setOrderNumber('TH-' + Math.floor(100000 + Math.random() * 900000));
+      setOrderNumber(newOrderNumber);
       setStep(3);
     }, 2500);
   };
@@ -100,20 +159,20 @@ const CheckoutPage = () => {
               <h2 className="font-display text-[32px] mb-7">DELIVERY INFORMATION</h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">First Name</label><input className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
-                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Last Name</label><input className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
+                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">First Name</label><input value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
+                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Last Name</label><input value={lastName} onChange={e => setLastName(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
                 </div>
-                <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Email Address</label><input type="email" className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
+                <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Email Address</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Phone Number</label><input className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
-                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Alternate Phone</label><input className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
+                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Phone Number</label><input value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
+                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Alternate Phone</label><input value={alternatePhone} onChange={e => setAlternatePhone(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
                 </div>
-                <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Address Line 1</label><input className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
-                <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Address Line 2 (Optional)</label><input className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
+                <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Address Line 1</label><input value={address1} onChange={e => setAddress1(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
+                <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">Address Line 2 (Optional)</label><input value={address2} onChange={e => setAddress2(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
                 <div className="grid grid-cols-3 gap-4">
-                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">City</label><input className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
-                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">State</label><select className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }}><option>Select State</option>{['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Delhi','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal'].map(s=><option key={s}>{s}</option>)}</select></div>
-                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">PIN Code</label><input className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
+                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">City</label><input value={city} onChange={e => setCity(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
+                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">State</label><select value={state} onChange={e => setState(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }}><option>Select State</option>{['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Delhi','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal'].map(s=><option key={s}>{s}</option>)}</select></div>
+                  <div><label className="text-[11px] uppercase tracking-[1.5px] text-th-text2 block mb-2">PIN Code</label><input value={pinCode} onChange={e => setPinCode(e.target.value)} className="w-full px-4 py-3.5 rounded text-sm font-body outline-none border border-[rgba(255,255,255,0.12)] focus:border-th-accent focus:shadow-[0_0_0_3px_rgba(0,229,255,0.1)] transition-all" style={{ background: 'hsl(0,0%,8.2%)', color: 'white' }} /></div>
                 </div>
 
                 <p className="text-[11px] uppercase tracking-[1.5px] text-th-text2 mt-6 mb-3">SELECT DELIVERY TYPE</p>

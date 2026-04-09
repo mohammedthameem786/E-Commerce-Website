@@ -38,7 +38,7 @@ const Navbar = () => {
         </div>
 
         <ul className="hidden md:flex gap-9">
-          {[['HOME', 'home'], ['PRODUCTS', 'products'], ['DEALS', 'deals'], ['ABOUT', 'about']].map(([label, id]) => (
+          {[['HOME', 'home'], ['PRODUCTS', 'products'], ['DEALS', 'deals'], ['ABOUT', 'about'], ['ORDERS', 'order-history']].map(([label, id]) => (
             <li key={id}>
               <button onClick={() => handleNavClick(label, id)} className={`text-[12px] uppercase tracking-[2px] transition-colors duration-200 font-body ${currentPage === id ? 'text-th-accent' : 'text-th-text2 hover:text-th-accent'}`}>
                 {label}
@@ -63,6 +63,10 @@ const Navbar = () => {
             {totalItems > 0 && <span className="absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full bg-th-accent text-[10px] font-mono font-bold flex items-center justify-center" style={{ color: '#080808' }}>{totalItems}</span>}
           </button>
 
+          <button onClick={() => navTo('order-history')} className="hidden md:flex w-10 h-10 rounded-full border border-th-bg3 items-center justify-center hover:border-th-accent/50 transition-colors group" title="Order History">
+            <i className="fa-solid fa-box text-[15px] text-th-text3 group-hover:text-th-accent transition-colors" />
+          </button>
+
           <button className="hidden md:flex w-10 h-10 rounded-full border border-th-bg3 items-center justify-center hover:border-th-accent/50 transition-colors group">
             <i className="fa-solid fa-user text-[15px] text-th-text3 group-hover:text-th-accent transition-colors" />
           </button>
@@ -75,7 +79,7 @@ const Navbar = () => {
 
       {mobileOpen && (
         <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center gap-8" style={{ background: 'rgba(8,8,8,0.97)' }}>
-          {[['HOME', 'home'], ['PRODUCTS', 'products'], ['DEALS', 'deals'], ['ABOUT', 'about']].map(([label, id]) => (
+          {[['HOME', 'home'], ['PRODUCTS', 'products'], ['DEALS', 'deals'], ['ABOUT', 'about'], ['ORDERS', 'order-history']].map(([label, id]) => (
             <button key={label} onClick={() => handleNavClick(label, id)} className="font-display text-5xl tracking-[4px] text-th-text hover:text-th-accent transition-colors">{label}</button>
           ))}
         </div>

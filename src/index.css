@@ -60,7 +60,7 @@
     background-color: hsl(var(--bg));
     color: hsl(var(--text));
     font-family: var(--font-body);
-    cursor: none;
+    cursor: auto;
     overflow-x: hidden;
   }
   

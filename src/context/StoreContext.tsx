@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { Product } from '@/data/products';
 
 export interface CartItem {
@@ -8,6 +8,32 @@ export interface CartItem {
   emoji: string;
   price: number;
   qty: number;
+}
+
+export interface OrderAddress {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  alternatePhone?: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  state: string;
+  pinCode: string;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  items: CartItem[];
+  address: OrderAddress;
+  totals: { subtotal: number; discount: number; delivery: number; gst: number; total: number };
+  paymentMethod: string;
+  deliveryType: string;
+  status: 'confirmed' | 'packed' | 'shipped' | 'delivered';
+  createdAt: string;
+  deliveryDate: string;
 }
 
 interface StoreContextType {
@@ -28,6 +54,11 @@ interface StoreContextType {
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   promoApplied: boolean;
   applyPromo: (code: string) => boolean;
+  orderHistory: Order[];
+  addOrderToHistory: (order: Order) => void;
+  searchOrders: (query: string) => Order[];
+  clearCart: () => void;
+  getLastAddress: () => OrderAddress | null;
 }
 
 interface Toast {
@@ -54,6 +85,19 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [promoApplied, setPromoApplied] = useState(false);
+  const [orderHistory, setOrderHistory] = useState<Order[]>([]);
+
+  // Load order history from localStorage on mount
+  useEffect(() => {
+    const savedOrders = localStorage.getItem('orderHistory');
+    if (savedOrders) {
+      try {
+        setOrderHistory(JSON.parse(savedOrders));
+      } catch (e) {
+        console.error('Failed to load order history:', e);
+      }
+    }
+  }, []);
 
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
     const id = ++toastId;
@@ -117,12 +161,43 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     return false;
   }, [showToast]);
 
+  const addOrderToHistory = useCallback((order: Order) => {
+    setOrderHistory(prev => {
+      const updated = [order, ...prev];
+      localStorage.setItem('orderHistory', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const searchOrders = useCallback((query: string) => {
+    const q = query.toLowerCase().trim();
+    if (!q) return orderHistory;
+    
+    return orderHistory.filter(order => 
+      order.items.some(item => 
+        item.name.toLowerCase().includes(q) ||
+        item.brand.toLowerCase().includes(q)
+      )
+    );
+  }, [orderHistory]);
+
+  const clearCart = useCallback(() => {
+    setCart([]);
+    setPromoApplied(false);
+  }, []);
+
+  const getLastAddress = useCallback(() => {
+    if (orderHistory.length === 0) return null;
+    return orderHistory[0].address;
+  }, [orderHistory]);
+
   return (
     <StoreContext.Provider value={{
       cart, wishlist, currentPage, selectedProduct, categoryFilter,
       addToCart, removeFromCart, updateQty, toggleWishlist,
       showPage, showProductDetail, setCategoryFilter,
       cartTotal, toasts, showToast, promoApplied, applyPromo,
+      orderHistory, addOrderToHistory, searchOrders, clearCart, getLastAddress,
     }}>
       {children}
     </StoreContext.Provider>
